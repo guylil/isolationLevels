@@ -1,58 +1,121 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+  <div>
+      <h1>Home assignment:</h1>
+      <h2>The most isolated country:</h2>
+      <div>
+        <span class="bold">{{sortedIsoCountries[0].country}}</span> with isolation level of <span class="bold">{{this.sortedIsoCountries[0].isoLevel}}</span>
+      </div>
+
+        <table class="table">
+            <thead class="head">
+                <tr>
+                    <th>Agent ID</th>
+                    <th>Country</th>
+                    <th>Address</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody class="body">
+                <tr v-for="(mission, idx) in missionsSortedByDates" :key="idx">
+                    <td>{{mission.agent}}</td>
+                    <td>{{mission.country}}</td>
+                    <td>{{mission.address}}</td>
+                    <td>{{mission.date}}</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4" class="bottomRow">{{missionsSortedByDates.length}} missions</td>
+                </tr>
+            </tfoot>
+        </table>
   </div>
 </template>
 
 <script>
-export default {
+    import missions from '../assets/data.js'
+
+    export default {
   name: 'HelloWorld',
   props: {
     msg: String
+  },
+  data: () => ({
+    missions,
+  }),
+  mounted() {
+  },
+  methods: {
+      isolationLevel(country) {
+          return this.isolatedAgents.reduce((acc, cur) => cur.country === country ? ++acc : acc, 0)
+      }
+  },
+  computed: {
+    agentsIsolationStat() {
+        let agentsStats = {};
+        this.missions.forEach(m =>{
+                if (!agentsStats[m.agent]) {agentsStats[m.agent] = [m.country]}
+                else {agentsStats[m.agent].push(m.country)}
+        });
+        return agentsStats
+    },
+    isolatedAgents() {
+        const isolatedAgents = [];
+        for (const a in this.agentsIsolationStat) {
+            if (this.agentsIsolationStat[a].length === 1)
+                isolatedAgents.push({agent:a, country:this.agentsIsolationStat[a][0]});
+        }
+        return isolatedAgents
+    },
+      sortedIsoCountries() {
+        const res = [];
+        this.countries.forEach(country => {
+            res.push({country, isoLevel: this.isolationLevel(country)})
+        });
+        return res.sort((a,b) => b.isoLevel - a.isoLevel)
+      },
+      countries() {return [...new Set(this.missions.map(mission => mission.country))]},
+      missionsSortedByDates() {
+          let res = JSON.parse(JSON.stringify(this.missions));
+        return res.sort((a,b) => new Date(a.date) - new Date(b.date));
+      },
   }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
+.bold {
+    font-weight: bold;
+    font-size: large;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
+.table {
+    margin-top: 15px;
+    border: silver solid 1px;
+    border-collapse: collapse;
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
+.head {
+    text-align: left;
+    background-color: whitesmoke;
+    border-bottom: lightgrey solid 4px;
 }
-a {
-  color: #42b983;
+tr { }
+th {
+    padding: 10px;
+    border-left: lightgrey solid 1px;
+
+}
+td {
+    padding: 8px 10px;
+    border-top: lightgrey double 2px;
+}
+hr {
+    background-color: red;
+    color: blue;
+}
+.bottomRow {
+    border-top: lightgrey solid 4px;
+    text-align: end;
+    background-color: whitesmoke;
 }
 </style>
